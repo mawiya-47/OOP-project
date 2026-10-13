@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MediCare Hospital Management</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b7a75'/%3E%3Cpath d='M26 12h12v14h14v12H38v14H26V38H12V26h14z' fill='%23fff'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#f3f7fa;--card:#fff;--text:#1b2733;--muted:#5d6b7a;--accent:#0b7a75;--on:#fff;--line:#d9e1ea;--bad:#b3261e;--good:#1e7a45;--soft:#e4f3f2;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10181f;--card:#18232c;--text:#e6edf3;--muted:#9aabba;--accent:#3cc3bb;--on:#06201e;--line:#2b3a46;--bad:#ff8a80;--good:#6fdc9b;--soft:#1d3a39;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10181f;--card:#18232c;--text:#e6edf3;--muted:#9aabba;--accent:#3cc3bb;--on:#06201e;--line:#2b3a46;--bad:#ff8a80;--good:#6fdc9b;--soft:#1d3a39;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--accent);color:var(--on);padding:18px 16px;text-align:center}
+header h1{margin:0;font-size:1.3rem;letter-spacing:.5px}
+header p{margin:2px 0 0;font-size:.85rem;opacity:.9}
+nav{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+nav button{flex:none;border:1px solid var(--line);background:transparent;color:var(--text);padding:8px 14px;border-radius:20px;cursor:pointer;font:inherit}
+nav button.on{background:var(--accent);color:var(--on);border-color:var(--accent)}
+main{max-width:980px;margin:0 auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
+h2{margin:0 0 10px;font-size:1.05rem}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;align-items:end}
+label{display:flex;flex-direction:column;font-size:.8rem;color:var(--muted);gap:3px}
+input,select{font:inherit;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--text);width:100%}
+button.btn{font:inherit;padding:9px 14px;border:0;border-radius:6px;background:var(--accent);color:var(--on);cursor:pointer}
+button.alt{background:transparent;color:var(--text);border:1px solid var(--line)}
+button.sm{padding:4px 9px;font-size:.8rem;margin:1px}
+button.danger{background:var(--bad);color:var(--card)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:end}
+.row label{flex:1;min-width:140px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:560px}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);font-size:.88rem;white-space:nowrap}
+th{color:var(--muted);font-weight:600}
+.empty{color:var(--muted);margin:6px 0}
+.pill{padding:2px 9px;border-radius:12px;font-size:.78rem;background:var(--soft);color:var(--accent)}
+.pill.x{background:transparent;border:1px solid var(--bad);color:var(--bad)}
+pre{margin:0;white-space:pre-wrap;font:inherit;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.88rem}
+#msg{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));padding:10px 16px;border-radius:8px;z-index:9;max-width:92%;font-size:.9rem;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#msg.ok{background:var(--good);color:var(--card)}#msg.bad{background:var(--bad);color:var(--card)}
+footer{text-align:center;color:var(--muted);font-size:.8rem;padding:6px 14px 22px}
+.sec{display:none}.sec.on{display:block}
+</style>
+</head>
+<body>
+<header><h1>🏥 MEDICARE HOSPITAL MANAGEMENT</h1><p>University OOP project: frontend in HTML, CSS and JavaScript</p></header>
+<nav id="tabs">
+<button data-tab="patients" class="on">Patients</button><button data-tab="doctors">Doctors</button>
+<button data-tab="appts">Appointments</button><button data-tab="employees">Employees</button><button data-tab="billing">Billing</button>
+</nav>
+<main>
+<div class="card" id="detailCard" hidden><h2>Details <button class="btn alt sm" onclick="$('detailCard').hidden=true">Close</button></h2><pre id="detailText"></pre></div>
+
+<!-- ========== PATIENTS ========== -->
+<section class="sec on" id="patients">
+<div class="card"><h2 id="pTitle">Add Patient</h2>
+<form class="form" onsubmit="savePatient(event)">
+<label>Name<input id="p_name"></label><label>Age<input id="p_age" type="number"></label>
+<label>Gender<select id="p_gender"><option>Male</option><option>Female</option><option>Other</option></select></label>
+<label>Phone<input id="p_phone" inputmode="numeric"></label><label>Disease / reason<input id="p_disease"></label>
+<div><button class="btn" id="pBtn">Add Patient</button> <button type="button" class="btn alt" onclick="resetPatientForm()">Clear</button></div>
+</form></div>
+<div class="card"><h2>All Patients</h2>
+<div class="row" style="margin:0 0 10px"><label>Search by ID<input id="p_search" type="number"></label>
+<button class="btn" onclick="searchPatient()">Search</button><button class="btn alt" onclick="renderPatients()">Show all</button></div>
+<div class="scroll" id="pTable"></div></div>
+</section>
+
+<!-- ========== DOCTORS ========== -->
+<section class="sec" id="doctors">
+<div class="card"><h2>Add Doctor</h2>
+<form class="form" onsubmit="saveDoctor(event)">
+<label>Name<input id="d_name"></label><label>Age<input id="d_age" type="number"></label>
+<label>Specialization<input id="d_spec"></label><label>Phone<input id="d_phone" inputmode="numeric"></label>
+<label>Consultation fee<input id="d_fee" type="number" step="0.01"></label>
+<div><button class="btn">Add Doctor</button></div></form></div>
+<div class="card"><h2>All Doctors</h2>
+<div class="row" style="margin:0 0 10px"><label>Search by ID<input id="d_search" type="number"></label>
+<button class="btn" onclick="searchDoctor()">Search</button><button class="btn alt" onclick="renderDoctors()">Show all</button></div>
+<div class="scroll" id="dTable"></div></div>
+</section>
+
+<!-- ========== APPOINTMENTS ========== -->
+<section class="sec" id="appts">
+<div class="card"><h2>Book Appointment</h2>
+<form class="form" onsubmit="bookAppt(event)">
+<label>Patient ID<input id="a_pid" type="number"></label><label>Doctor ID<input id="a_did" type="number"></label>
+<label>Date<input id="a_date" type="date"></label><label>Time<input id="a_time" type="time"></label>
+<div><button class="btn">Book</button></div></form></div>
+<div class="card"><h2>All Appointments</h2>
+<div class="row" style="margin:0 0 10px"><label>Search by patient ID<input id="a_search" type="number"></label>
+<button class="btn" onclick="searchAppt()">Search</button><button class="btn alt" onclick="renderAppts()">Show all</button></div>
+<div class="scroll" id="aTable"></div></div>
+</section>
+
+<!-- ========== EMPLOYEES ========== -->
+<section class="sec" id="employees">
+<div class="card"><h2>Add Employee</h2>
+<form class="form" onsubmit="saveEmployee(event)">
+<label>Name<input id="e_name"></label><label>Age<input id="e_age" type="number"></label>
+<label>Phone<input id="e_phone" inputmode="numeric"></label>
+<label>Position<select id="e_pos"><option>Receptionist</option><option>Nurse</option><option>Pharmacist</option></select></label>
+<label>Salary<input id="e_sal" type="number" step="0.01"></label>
+<div><button class="btn">Add Employee</button></div></form></div>
+<div class="card"><h2>Change Salary (uses the setter)</h2>
+<div class="row" style="margin:0"><label>Employee ID<input id="e_cid" type="number"></label>
+<label>New salary<input id="e_csal" type="number" step="0.01"></label><button class="btn" onclick="changeSalary()">Update salary</button></div></div>
+<div class="card"><h2>All Employees</h2>
+<div class="row" style="margin:0 0 10px"><label>Search by ID<input id="e_search" type="number"></label>
+<button class="btn" onclick="searchEmployee()">Search</button><button class="btn alt" onclick="renderEmployees()">Show all</button></div>
+<div class="scroll" id="eTable"></div></div>
+</section>
+
+<!-- ========== BILLING ========== -->
+<section class="sec" id="billing">
+<div class="card"><h2>Create Bill</h2>
+<form class="form" onsubmit="makeBill(event)">
+<label>Patient ID<input id="b_pid" type="number"></label>
+<label>Consultation charges<input id="b_con" type="number" step="0.01"></label>
+<label>Additional charges<input id="b_add" type="number" step="0.01"></label>
+<div><button class="btn">Create Bill</button></div></form></div>
+<div class="card" id="billCard" hidden><h2>Bill</h2><pre id="billText"></pre></div>
+</section>
+</main>
+<footer>Data is kept in memory only. Refreshing or closing the page clears everything, like closing the Python program.</footer>
+<div id="msg" hidden></div>
+
+<script>
+// ============================================================
+//  OOP CLASSES (same design as the Python project)
+// ============================================================
+
+// ABSTRACTION: Person cannot be created directly, and children MUST implement getDetails()
+class Person {
+  constructor(name, age, phone) {
+    if (new.target === Person) throw new Error("Person is abstract.");
+    this.name = name; this.age = age; this.phone = phone;
+  }
+  getDetails() { throw new Error("Child class must implement getDetails()."); }
+}
+
+// INHERITANCE: Patient, Doctor and Employee all extend Person
+class Patient extends Person {
+  constructor(id, name, age, gender, phone, disease) {
+    super(name, age, phone);
+    this.id = id; this.gender = gender; this.disease = disease;
+  }
+  // POLYMORPHISM: each class has its own getDetails()
+  getDetails() {
+    return `Patient ID : ${this.id}\nName       : ${this.name}\nAge        : ${this.age}\nGender     : ${this.gender}\nPhone      : ${this.phone}\nDisease    : ${this.disease}`;
+  }
+}
+
+class Doctor extends Person {
+  constructor(id, name, age, specialization, phone, fee) {
+    super(name, age, phone);
+    if (fee < 0) throw new Error("Consultation fee cannot be negative.");
+    this.id = id; this.specialization = specialization; this.fee = fee;
+  }
+  getDetails() {
+    return `Doctor ID      : ${this.id}\nName           : ${this.name}\nAge            : ${this.age}\nSpecialization : ${this.specialization}\nPhone          : ${this.phone}\nConsultation   : ${this.fee.toFixed(2)}`;
+  }
+}
+
+class Employee extends Person {
+  #salary = 0;                       // ENCAPSULATION: private field, hidden from outside code
+  constructor(id, name, age, phone, position, salary) {
+    super(name, age, phone);
+    this.id = id; this.position = position;
+    this.setSalary(salary);          // setter validates, even inside the constructor
+  }
+  getSalary() { return this.#salary; }
+  setSalary(value) {
+    if (value < 0) throw new Error("Salary cannot be negative.");
+    this.#salary = value;
+  }
+  getDetails() {
+    return `Employee ID : ${this.id}\nName        : ${this.name}\nAge         : ${this.age}\nPhone       : ${this.phone}\nPosition    : ${this.position}\nSalary      : ${this.getSalary().toFixed(2)}`;
+  }
+}
+
+class Appointment {
+  constructor(id, patientId, doctorId, date, time) {
+    this.id = id; this.patientId = patientId; this.doctorId = doctorId;
+    this.date = date; this.time = time; this.status = "Booked";
+  }
+  cancel() { this.status = "Cancelled"; }
+  getDetails() {
+    return `Appointment ID : ${this.id}\nPatient ID     : ${this.patientId}\nDoctor ID      : ${this.doctorId}\nDate           : ${this.date}\nTime           : ${this.time}\nStatus         : ${this.status}`;
+  }
+}
+
+class Bill {
+  constructor(patientId, patientName, consultation, additional) {
+    if (consultation < 0 || additional < 0) throw new Error("Charges cannot be negative.");
+    this.patientId = patientId; this.patientName = patientName;
+    this.consultation = consultation; this.additional = additional;
+  }
+  calculateTotal() { return this.consultation + this.additional; }
+  getDetails() {
+    return `Patient ID           : ${this.patientId}\nPatient Name         : ${this.patientName}\nConsultation charges : ${this.consultation.toFixed(2)}\nAdditional charges   : ${this.additional.toFixed(2)}\nTOTAL BILL           : ${this.calculateTotal().toFixed(2)}`;
+  }
+}
+
+// Hospital owns the four arrays and the rules (just like hospital.py)
+class Hospital {
+  constructor(name) {
+    this.name = name;
+    this.patients = []; this.doctors = []; this.employees = []; this.appointments = [];
+    this.nextPatientId = 1; this.nextDoctorId = 1; this.nextEmployeeId = 1; this.nextAppointmentId = 1; // unique IDs
+  }
+  // ----- patients -----
+  addPatient(name, age, gender, phone, disease) {
+    const p = new Patient(this.nextPatientId++, name, age, gender, phone, disease);
+    this.patients.push(p); return p;
+  }
+  findPatient(id) { return this.patients.find(p => p.id === id) || null; }
+  removePatient(id) {
+    if (!this.findPatient(id)) throw new Error("No patient found with that ID.");
+    this.patients = this.patients.filter(p => p.id !== id);
+    this.appointments.forEach(a => { if (a.patientId === id && a.status === "Booked") a.cancel(); });
+  }
+  // ----- doctors -----
+  addDoctor(name, age, spec, phone, fee) {
+    const d = new Doctor(this.nextDoctorId++, name, age, spec, phone, fee);
+    this.doctors.push(d); return d;
+  }
+  findDoctor(id) { return this.doctors.find(d => d.id === id) || null; }
+  removeDoctor(id) {
+    if (!this.findDoctor(id)) throw new Error("No doctor found with that ID.");
+    this.doctors = this.doctors.filter(d => d.id !== id);
+    this.appointments.forEach(a => { if (a.doctorId === id && a.status === "Booked") a.cancel(); });
+  }
+  // ----- employees -----
+  addEmployee(name, age, phone, position, salary) {
+    const e = new Employee(this.nextEmployeeId++, name, age, phone, position, salary);
+    this.employees.push(e); return e;
+  }
+  findEmployee(id) { return this.employees.find(e => e.id === id) || null; }
+  // ----- appointments -----
+  bookAppointment(patientId, doctorId, date, time) {
+    if (!this.findPatient(patientId)) throw new Error("Patient ID not found. Add the patient first.");
+    if (!this.findDoctor(doctorId)) throw new Error("Doctor ID not found. Add the doctor first.");
+    const busy = this.appointments.some(a => a.doctorId === doctorId && a.date === date && a.time === time && a.status === "Booked");
+    if (busy) throw new Error("This doctor is already booked at that date and time.");
+    const a = new Appointment(this.nextAppointmentId++, patientId, doctorId, date, time);
+    this.appointments.push(a); return a;
+  }
+  cancelAppointment(id) {
+    const a = this.appointments.find(x => x.id === id);
+    if (!a) throw new Error("Appointment ID not found.");
+    if (a.status === "Cancelled") throw new Error("This appointment is already cancelled.");
+    a.cancel();
+  }
+}
+
+// ============================================================
+//  USER INTERFACE CODE
+// ============================================================
+const hospital = new Hospital("MediCare Hospital");
+let editingPatientId = null;
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function notify(text, isError) {
+  const box = $("msg");
+  box.textContent = text; box.className = isError ? "bad" : "ok"; box.hidden = false;
+  clearTimeout(notify.timer); notify.timer = setTimeout(() => box.hidden = true, 4000);
+}
+// run(): any Error thrown by the classes or validators is shown as a message
+function run(action) { try { action(); } catch (err) { notify(err.message, true); } }
+function need(condition, message) { if (!condition) throw new Error(message); }
+
+// ----- input validators -----
+function readText(id, label) {
+  const v = $(id).value.trim(); need(v !== "", label + " cannot be empty."); return v;
+}
+function readInt(id, min, max, label) {
+  const v = $(id).value.trim(), n = Number(v);
+  need(v !== "" && Number.isInteger(n) && n >= min && n <= max, `${label} must be a whole number between ${min} and ${max}.`);
+  return n;
+}
+function readAmount(id, label) {
+  const v = $(id).value.trim(), n = Number(v);
+  need(v !== "" && !isNaN(n) && n >= 0, label + " must be a number and cannot be negative."); return n;
+}
+function readPhone(id) {
+  const v = $(id).value.trim(); need(/^\d{7,15}$/.test(v), "Phone must be 7 to 15 digits (numbers only)."); return v;
+}
+const readId = (id, label) => readInt(id, 1, 999999, label);
+function clearForm(ids) { ids.forEach(id => { $(id).value = ""; }); }
+
+// ----- tables -----
+function drawTable(elId, heads, rows, emptyText) {
+  $(elId).innerHTML = rows.length
+    ? "<table><thead><tr>" + heads.map(h => `<th>${h}</th>`).join("") + "</tr></thead><tbody>" +
+      rows.map(r => "<tr>" + r.map(c => `<td>${c}</td>`).join("") + "</tr>").join("") + "</tbody></table>"
+    : `<p class="empty">${emptyText}</p>`;
+}
+function showDetails(obj) {
+  $("detailText").textContent = obj.getDetails();   // POLYMORPHISM: works for any class
+  $("detailCard").hidden = false; window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ----- tabs -----
+$("tabs").addEventListener("click", e => {
+  const tab = e.target.dataset.tab; if (!tab) return;
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b === e.target));
+  document.querySelectorAll(".sec").forEach(s => s.classList.toggle("on", s.id === tab));
+});
+
+// ===== Patients =====
+function renderPatients(list = hospital.patients) {
+  drawTable("pTable", ["ID","Name","Age","Gender","Phone","Disease","Actions"],
+    list.map(p => [p.id, esc(p.name), p.age, p.gender, esc(p.phone), esc(p.disease),
+      `<button class="btn alt sm" onclick="showDetails(hospital.findPatient(${p.id}))">Details</button>
+       <button class="btn alt sm" onclick="editPatient(${p.id})">Edit</button>
+       <button class="btn danger sm" onclick="removePatient(${p.id})">Remove</button>`]), "No patients found.");
+}
+function savePatient(e) {
+  e.preventDefault();
+  run(() => {
+    const name = readText("p_name", "Name"), age = readInt("p_age", 0, 120, "Age"), gender = $("p_gender").value,
+          phone = readPhone("p_phone"), disease = readText("p_disease", "Disease");
+    if (editingPatientId) {
+      Object.assign(hospital.findPatient(editingPatientId), { name, age, gender, phone, disease });
+      notify("Patient updated successfully.");
+    } else {
+      const p = hospital.addPatient(name, age, gender, phone, disease);
+      notify("Patient added. Patient ID = " + p.id);
+    }
+    resetPatientForm(); renderPatients();
+  });
+}
+function editPatient(id) {
+  const p = hospital.findPatient(id); editingPatientId = id;
+  $("p_name").value = p.name; $("p_age").value = p.age; $("p_gender").value = p.gender;
+  $("p_phone").value = p.phone; $("p_disease").value = p.disease;
+  $("pTitle").textContent = "Update Patient ID " + id; $("pBtn").textContent = "Save Changes";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function resetPatientForm() {
+  editingPatientId = null; clearForm(["p_name","p_age","p_phone","p_disease"]);
+  $("pTitle").textContent = "Add Patient"; $("pBtn").textContent = "Add Patient";
+}
+function removePatient(id) {
+  run(() => { hospital.removePatient(id); notify("Patient removed. Their booked appointments were cancelled."); renderPatients(); renderAppts(); });
+}
+function searchPatient() {
+  run(() => {
+    const p = hospital.findPatient(readId("p_search", "Patient ID"));
+    need(p, "No patient found with that ID."); renderPatients([p]);
+  });
+}
+
+// ===== Doctors =====
+function renderDoctors(list = hospital.doctors) {
+  drawTable("dTable", ["ID","Name","Age","Specialization","Phone","Fee","Actions"],
+    list.map(d => [d.id, esc(d.name), d.age, esc(d.specialization), esc(d.phone), d.fee.toFixed(2),
+      `<button class="btn alt sm" onclick="showDetails(hospital.findDoctor(${d.id}))">Details</button>
+       <button class="btn danger sm" onclick="removeDoctor(${d.id})">Remove</button>`]), "No doctors found.");
+}
+function saveDoctor(e) {
+  e.preventDefault();
+  run(() => {
+    const d = hospital.addDoctor(readText("d_name","Name"), readInt("d_age",18,100,"Age"),
+      readText("d_spec","Specialization"), readPhone("d_phone"), readAmount("d_fee","Consultation fee"));
+    notify("Doctor added. Doctor ID = " + d.id);
+    clearForm(["d_name","d_age","d_spec","d_phone","d_fee"]); renderDoctors();
+  });
+}
+function removeDoctor(id) {
+  run(() => { hospital.removeDoctor(id); notify("Doctor removed. Their booked appointments were cancelled."); renderDoctors(); renderAppts(); });
+}
+function searchDoctor() {
+  run(() => {
+    const d = hospital.findDoctor(readId("d_search", "Doctor ID"));
+    need(d, "No doctor found with that ID."); renderDoctors([d]);
+  });
+}
+
+// ===== Appointments =====
+function renderAppts(list = hospital.appointments) {
+  drawTable("aTable", ["ID","Patient ID","Doctor ID","Date","Time","Status","Actions"],
+    list.map(a => [a.id, a.patientId, a.doctorId, a.date, a.time,
+      `<span class="pill ${a.status === "Booked" ? "" : "x"}">${a.status}</span>`,
+      a.status === "Booked" ? `<button class="btn danger sm" onclick="cancelAppt(${a.id})">Cancel</button>` : "-"]),
+    "No appointments found.");
+}
+function bookAppt(e) {
+  e.preventDefault();
+  run(() => {
+    const pid = readId("a_pid", "Patient ID"), did = readId("a_did", "Doctor ID");
+    const date = $("a_date").value, time = $("a_time").value;
+    need(date !== "", "Please choose a date."); need(time !== "", "Please choose a time.");
+    const a = hospital.bookAppointment(pid, did, date, time);
+    notify("Appointment booked. Appointment ID = " + a.id);
+    clearForm(["a_pid","a_did","a_date","a_time"]); renderAppts();
+  });
+}
+function cancelAppt(id) { run(() => { hospital.cancelAppointment(id); notify("Appointment cancelled."); renderAppts(); }); }
+function searchAppt() {
+  run(() => {
+    const pid = readId("a_search", "Patient ID");
+    renderAppts(hospital.appointments.filter(a => a.patientId === pid));
+  });
+}
+
+// ===== Employees =====
+function renderEmployees(list = hospital.employees) {
+  drawTable("eTable", ["ID","Name","Age","Phone","Position","Salary","Actions"],
+    list.map(e => [e.id, esc(e.name), e.age, esc(e.phone), e.position, e.getSalary().toFixed(2),
+      `<button class="btn alt sm" onclick="showDetails(hospital.findEmployee(${e.id}))">Details</button>`]), "No employees found.");
+}
+function saveEmployee(e) {
+  e.preventDefault();
+  run(() => {
+    const emp = hospital.addEmployee(readText("e_name","Name"), readInt("e_age",18,70,"Age"),
+      readPhone("e_phone"), $("e_pos").value, readAmount("e_sal","Salary"));
+    notify("Employee added. Employee ID = " + emp.id);
+    clearForm(["e_name","e_age","e_phone","e_sal"]); renderEmployees();
+  });
+}
+function changeSalary() {
+  run(() => {
+    const emp = hospital.findEmployee(readId("e_cid", "Employee ID"));
+    need(emp, "No employee found with that ID.");
+    emp.setSalary(readAmount("e_csal", "New salary"));   // uses the setter
+    notify("Salary updated. New salary = " + emp.getSalary().toFixed(2));
+    clearForm(["e_cid","e_csal"]); renderEmployees();
+  });
+}
+function searchEmployee() {
+  run(() => {
+    const emp = hospital.findEmployee(readId("e_search", "Employee ID"));
+    need(emp, "No employee found with that ID."); renderEmployees([emp]);
+  });
+}
+
+// ===== Billing =====
+function makeBill(e) {
+  e.preventDefault();
+  run(() => {
+    const patient = hospital.findPatient(readId("b_pid", "Patient ID"));
+    need(patient, "No patient found with that ID.");
+    const bill = new Bill(patient.id, patient.name, readAmount("b_con","Consultation charges"), readAmount("b_add","Additional charges"));
+    $("billText").textContent = bill.getDetails(); $("billCard").hidden = false;
+    notify("Bill created. Total = " + bill.calculateTotal().toFixed(2));
+  });
+}
+
+// first draw of the empty tables
+renderPatients(); renderDoctors(); renderAppts(); renderEmployees();
+</script>
+</body>
+</html>
