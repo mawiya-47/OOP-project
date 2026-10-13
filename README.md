@@ -1,6 +1,5 @@
-<p align="center">
-  <img src="assets/banner.svg" alt="MediCare Hospital Management System" width="100%">
-</p>
+"MediCare Hospital Management System" 
+
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.8%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.8+">
